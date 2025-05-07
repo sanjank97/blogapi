@@ -47,18 +47,29 @@ exports.updatePost = async (req, res) => {
     const { title, content } = req.body;
     const image = req.file ? req.file.filename : null;
 
-    await postModel.updatePost(postId, title, content, image);
+    const result = await postModel.updatePost(postId, title, content, image);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
     res.json({ message: 'Post updated' });
   } catch (err) {
     res.status(500).json({ message: 'DB error', error: err.message });
   }
 };
 
+
 // Delete post
 exports.deletePost = async (req, res) => {
   try {
     const postId = req.params.id;
-    await postModel.deletePost(postId);
+    const result = await postModel.deletePost(postId);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Post not found or already deleted' });
+    }
+
     res.json({ message: 'Post deleted' });
   } catch (err) {
     res.status(500).json({ message: 'DB error', error: err.message });

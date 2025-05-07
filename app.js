@@ -29,12 +29,12 @@ db.getConnection()
 const authRoutes = require('./routes/authRoutes');
 // Uncomment when ready to use these routes
  const postRoutes = require('./routes/postRoutes');
-// const commentRoutes = require('./routes/commentRoutes');
+ const commentRoutes = require('./routes/commentRoutes');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
-// app.use('/api/comments', commentRoutes);
+app.use('/api/comments', commentRoutes);
 
 // Global error handling middleware (optional but recommended)
 app.use((err, req, res, next) => {

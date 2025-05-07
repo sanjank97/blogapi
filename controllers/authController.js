@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { createUser, getUserByEmail } = require('../models/userModel');
+const { createUser, getUserByEmail, createUserbyAdmin, updateUserbyAdmin, getUserList} = require('../models/userModel');
 
 const register = async (req, res) => {
   try {
@@ -44,4 +44,41 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+
+
+const addUser = async (req, res) => {
+  const { name, email, password, role } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const result = await createUserbyAdmin(name, email, hashedPassword, role);
+    res.status(201).json({ message: 'User created successfully', result });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+const updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, role } = req.body;
+  try {
+    const result = await updateUserbyAdmin(id, { name, email, role });
+    res.status(200).json({ message: 'User updated successfully', result });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+
+
+const userList = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, role } = req.body;
+  try {
+    const result = await getUserList();
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+module.exports = { register, login, addUser, updateUser,userList };

@@ -20,22 +20,39 @@ const storage = multer.diskStorage({
   },
 });
 
-// Multer upload config with restrictions on file types and size limit
+// File type filter
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|gif/;
+  const ext = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mime = allowedTypes.test(file.mimetype);
+
+  if (ext && mime) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files (jpg, png, gif, webp) are allowed!'));
+  }
+};
+
+// Base multer config
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB size limit
-  fileFilter: (req, file, cb) => {
-    // Allow only specific image file types (jpeg, jpg, png, gif)
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const ext = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mime = allowedTypes.test(file.mimetype);
-
-    if (ext && mime) {
-      cb(null, true); // File type is allowed
-    } else {
-      cb(new Error('Only image files are allowed!'), false); // Reject file
-    }
-  }
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter,
 });
 
-module.exports = upload;
+// Custom middleware wrapper for single file upload with error handling
+const uploadImage = (fieldName) => (req, res, next) => {
+  upload.single(fieldName)(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ message: err.message });
+    } else if (err) {
+      return res.status(400).json({ message: err.message });
+    }
+    next(); // Continue if no errors
+  });
+};
+
+module.exports = {
+  upload,       // base multer if needed elsewhere
+  uploadImage,  // custom error-handled middleware
+};
